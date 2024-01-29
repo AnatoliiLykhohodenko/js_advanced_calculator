@@ -1,43 +1,90 @@
 'use strict';
 
 /**
- * Another calculator. Now the task is more difficult.
- * Create a `makeCalculator` function that returns an object that
- * has the following fields:
- *  - Methods: `add`, `subtract`, `multiply`, `divide`, `reset`, `operate`.
- *  - The `result` property is initially 0.
+ *   Time flies, standards change. Let's get rid of the routine of changing the
+ * date format. Create a `formatDate` function that accepts the `date` string,
+ * the old `fromFormat` array and the new `toFormat` array. Function returns
+ * given date in new format.
+ *   The function can change a separator, reorder the date parts of convert a
+ * year from 4 digits to 2 digits and back.
+ *   When converting from YYYY to YY just use 2 last digit (1997 -> 97).
+ *   When converting from YY to YYYY use 20YY if YY < 30 and 19YY otherwise.
  *
- * How the calculator will work:
- * - Each `operate` call takes a callback and a number and sets the
- *   appropriate value to the `result` property.
- * - The `reset` method resets `result` value to 0.
- * - `add`, `subtract`, `multiply`, `divide` are passed as callbacks to
- *   `operate` method
- * - The `operate` and `reset` methods can be called in a chain.
+ * Examples:
  *
- * Example:
- * const calculator = makeCalculator();
+ * formatDate(
+ *   '2020-02-18',
+ *   ['YYYY', 'MM', 'DD', '-'],
+ *   ['YYYY', 'MM', 'DD', '.'],
+ * ) // '2020.02.18'
  *
- * calculator.operate(calculator.add, 21)
- * calculator.result === 21
-
- * calculator.reset()
- * calculator.result === 0
-
- * calculator
- *  .operate(calculator.add, 10)
- *  .reset()
- *  .operate(calculator.subtract, 20)
- *  .operate(calculator.divide, 5)
- *  .operate(calculator.multiply, 7)
+ * formatDate(
+ *   '2020-02-18',
+ *   ['YYYY', 'MM', 'DD', '-'],
+ *   ['DD', 'MM', 'YYYY', '.'],
+ * ) // '18.02.2020'
  *
- * calculator.result === -28
+ * formatDate(
+ *   '18-02-2020',
+ *   ['DD', 'MM', 'YYYY', '-'],
+ *   ['DD', 'MM', 'YY', '/'],
+ * ) // '18/02/20'
  *
+ * formatDate(
+ *   '20/02/18',
+ *   ['YY', 'MM', 'DD', '/'],
+ *   ['YYYY', 'MM', 'DD', '.'],
+ * ) // '2020.02.18'
  *
- * @return {object}
+ * formatDate(
+ *   '97/02/18',
+ *   ['YY', 'MM', 'DD', '/'],
+ *   ['DD', 'MM', 'YYYY', '.'],
+ * ) // '18.02.1997'
+ *
+ * @param {string} date
+ * @param {string[]} fromFormat
+ * @param {string[]} toFormat
+ *
+ * @returns {string}
  */
-function makeCalculator() {
-  // write code here
+
+function formatDate(date, fromFormat, toFormat) {
+  const from = [...fromFormat];
+  const to = [...toFormat];
+
+  from.pop();
+  to.pop();
+
+  if (from.join('') === to.join('')) {
+    return date.replaceAll(
+      fromFormat[fromFormat.length - 1], toFormat[toFormat.length - 1],
+    );
+  }
+
+  const splittedDate = date.split(fromFormat[fromFormat.length - 1]);
+  const obj = {};
+  const result = [];
+
+  for (let i = 0; i < splittedDate.length; i++) {
+    obj[fromFormat[i]] = splittedDate[i];
+  }
+
+  for (let i = 0; i < toFormat.length - 1; i++) {
+    if (toFormat[i] === 'YY' && !obj['YY']) {
+      result.push(obj['YYYY'].slice(2));
+    } else if (toFormat[i] === 'YYYY' && !obj['YYYY']) {
+      if (obj['YY'] < 30) {
+        result.push('20' + obj['YY']);
+      } else {
+        result.push('19' + obj['YY']);
+      }
+    } else {
+      result.push(obj[toFormat[i]]);
+    }
+  }
+
+  return result.join(toFormat[toFormat.length - 1]);
 }
 
-module.exports = makeCalculator;
+module.exports = formatDate;
